@@ -15,6 +15,8 @@ def main():
         return -1
     else:
         account = sys.argv[1]
+
+        print account
         print "Account: {}".format(account)
         checkAccount(account)
     return 0
