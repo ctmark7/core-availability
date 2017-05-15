@@ -1,7 +1,7 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python
 
 import sys
-import subprocess
+from subprocess import PIPE, Popen 
 import re
 import os
 
@@ -32,7 +32,9 @@ def checkAccount(acc):
     # need to get netID somehow...
     # ask pascal how to get list of members belonging to an account
     cmd = 'echo $USER'
-    netid = subprocess.check_output(cmd, shell=True)
+    pp = Popen(cmd, stdout=PIPE, shell=True)
+    # p = Popen(['echo', 'user'], stdout=PIPE)
+    netid = pp.communicate()[0]
     print "netID: {0}".format(netid)
     # search for netID in account permissions...
 
@@ -47,9 +49,11 @@ def checkAccount(acc):
     #
 
     # using 'checkproject <projectname> command ...'
-    # cmd = "checkproject {}".format(acc)
-    checkproj = subprocess.check_output(cmd, shell=True)
-    if checkproj != "You aren't listed as having access to the project %(project)s":
+    cmd = "checkproject {0}".format(acc) 
+      
+    p = Popen(cmd,stdout=PIPE, shell=True)
+    checkproj = p.communicate()[0] 
+    if "Reporting" in checkproj:
         print "ACCESS GRANTED I need to maybe go into the actualy retrieval of project data"
         return True
     else:
