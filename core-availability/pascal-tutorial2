@@ -1,0 +1,57 @@
+Last login: Fri May  5 14:55:46 on ttys000
+dhcp-10-105-98-168:~ cmark$ !s
+sudo freenect-glview
+Password:
+dhcp-10-105-98-168:~ cmark$ !ss
+ssh ctm499@murphy.wot.eecs.northwestern.edu
+ctm499@murphy.wot.eecs.northwestern.edu's password: 
+
+dhcp-10-105-98-168:~ cmark$ !ssh ctm499@quest.northwestern.edu
+ssh ctm499@murphy.wot.eecs.northwestern.edu ctm499@quest.northwestern.edu
+ctm499@murphy.wot.eecs.northwestern.edu's password: 
+
+dhcp-10-105-98-168:~ cmark$ ssh ctm499@quest.northwestern.edu
+ctm499@quest.northwestern.edu's password: 
+Last login: Fri May  5 14:56:03 2017 from dhcp-10-105-98-168.wireless.northwestern.private
+
+Quest has three partitions, which you can specify in your script (for example:  #MSUB -l partition=quest6). 
+
+Partitions and node specifications are below: 
+- quest4: 20 cores & 128 GB memory per node 
+- quest5: 24 cores & 128 GB memory per node 
+- quest6: 28 cores & 128 GB memory per node 
+  
+If you would like to purchase nodes or storage for dedicated usage, contact quest-help@northwestern.edu. 
+  
+Please remember that Quest is not approved for contractually or legally restricted data. 
+Ensure to anonymize or de-identify your data before moving to data to quest. 
+Contact us if you need a computing environment for the use of restricted data. 
+ 
+Information on Quest can be found at http://www.it.northwestern.edu/research/user-services/quest/index.html. 
+For any questions, please contact us at quest-help@northwestern.edu.
+
+[ctm499@quser11 ~]$ msub -I -A a9009 -q short -l walltime=00:30:00 -l nodes=2:ppn=12
+qsub: waiting for job 19870841.qsched03.quest.it.northwestern.edu to start
+qsub: job 19870841.qsched03.quest.it.northwestern.edu ready
+
+----------------------------------------
+PBS: Begin PBS Prologue Fri May  5 15:01:20 CDT 2017 1494014480
+PBS: Job ID:		19870841.qsched03.quest.it.northwestern.edu
+PBS: Username:		ctm499
+PBS: Group:		ctm499
+PBS: Executing queue:     short
+PBS: Job name:		STDIN
+PBS: Account:		a9009
+----------------------------------------
+   The following variables are not
+   guaranteed to be the same in 
+   prologue and the job run script  
+----------------------------------------
+PBS: Temporary Dir($TMPDIR):	/tmp/19870841.qsched03.quest.it.northwestern.edu
+PBS: Master Node($PBS_MSHOST):		qnode5056
+PBS: node file($PBS_NODEFILE):  /hpc/opt/torque6/nodes/qnode5056/aux//19870841.qsched03.quest.it.northwestern.edu
+PBS: PATH (in prologue) : /bin:/usr/bin
+PBS: WORKDIR ($PBS_O_WORKDIR) is:  /home/ctm499
+----------------------------------------
+PBS: End PBS Prologue Fri May  5 15:01:20 CDT 2017 1494014480
+[ctm499@qnode5056 ~]$ 

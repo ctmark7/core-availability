@@ -1,0 +1,32 @@
+core-availability.txt
+
+script takesin allocation
+outputs: number of cores that are:
+    - free (no processes running on it)
+    - available (readily available, 4 out of 20 available)
+
+DETAILS:
+python script
+	Input: account
+	output: formatted sheet of available nodes to account + how many FREE cores are on each one
+
+interacting with command line/ terminal
+
+3 main commands:
+	- showres -n -g | grep <account or basename reservation>
+	- showq -R <reservation> -r -> jobs tied to nodes for <reservation>
+	- checkjob <jobID> -> more detailed info of the job running for multiple nodes /codes
+
+Process:
+	- find all nodes for an allocation + the reservation ID's
+	- for each reservation ID <account_name.number> belonging to account
+		- showq to get JOBID + # Processes on each Job
+	- for each Job:
+		- get 'Allocated Node' info
+			- qnode IDs, # of cores being used on each node.
+			- subtract from total # procs? aggregate # of free nodes available to users
+
+Checking:
+	- check that user (netID) is a part of the inputted allocation/ account
+	- check for empty showq's (0 JOBID's)
+
