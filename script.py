@@ -17,7 +17,7 @@ def main():
         account = sys.argv[1]
 
         print account
-        print "Account: {}".format(account)
+        print "Account: {0}".format(account)
         checkAccount(account)
     return 0
 
