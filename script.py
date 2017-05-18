@@ -11,8 +11,8 @@ def main():
     return:
     """
     if len(sys.argv) != 2: # add 4th argument for year to exempt? (e.g. 2017?)
-        print "\tERROR: Please input valid allocation number"
-        print "\tExiting..."
+        print ">> ERROR: Please input valid account number"
+        print ">> Exiting..."
         return -1
     else:
         account = sys.argv[1]
@@ -20,9 +20,17 @@ def main():
         print "Account: {0}".format(account)
         checkAccount(account)
 	
+	jobs = []
+	print ">> Getting reservations..." 
 	reservations = showRes(account)	
+	print ">> Getting jobs..." 
 	for res, node_list in reservations.iteritems():
-		getJobs(res)	
+		curr_jobs = getJobs(res)
+		if curr_jobs:
+			jobs += (curr_jobs)	
+
+	print ">> Checking jobs...".format(reservations)	
+	checkJobs(jobs)
     return 0
 
 def checkAccount(acc):
@@ -59,7 +67,8 @@ def checkAccount(acc):
         print 'Member of {0}'.format(acc, end='') 
     else:
         print checkproj
-        return False
+	print ">> NEED TO FIGURE OUT WHAT ENTAILS PERMISSION TO AN ACCOUNT"
+        return -1 
 
 def showRes(acc):
 	"""
@@ -87,24 +96,52 @@ def showRes(acc):
 				res_dict[resid] = []
 			if node not in res_dict[resid]:
 				res_dict[resid].append(node)
+		# print "Reservations: {0}".format(res_dict)
 		return res_dict
 def getJobs(reservation):
 	"""
 	input: dict of reservation keys and list of nodes as values
-	return: gets info of RUNNING jobs on inputted reservation [JOBID, MHOST, PROCS, STARTTIME(necessary?)]
+	return: gets info of RUNNING jobs on inputted reservation [JOBID, MHOST, PROCS] (starttime?) 
 		currently returns 2D array w/ info on current running jobs for inputted reservation
 	"""
-	
 	cmd = "showq -R {0} -r".format(reservation)
 	showq = popen_output(cmd)
 	if showq is not None:
 		showq = [line.split() for line in showq.split("\n") if line]
 		# output format: ['JOBID', 'S', 'PAR', 'EFFIC', 'XFACTOR', 'Q', 'USERNAME', 'ACCNT', 'MHOST', 'PROCS', 'REMAINING', 'STARTTIME']
-		jobs = [[line[0], line[8], line[9], line[10]] for line in showq[2:-3]]
-		print jobs
+		jobs = [[line[0], line[8], line[9]] for line in showq[2:-3]]
+		print "Jobs running on reservation {0}: {1}".format(reservation, len(jobs))
+		return jobs
 	else:
-		print "NUTHIN"
+		print "No running jobs on reservation '{0}'".format(reservation)
+		return -1
 	return 0	
+def checkJobs(job_list):
+	"""
+		input: list of currently running jobs for reservation
+		output: ???
+	"""
+	for job in job_list:
+		print '>> Checking job {0}...\n>> starts at {1} - capacity: {2}'.format(job[0], job[1], job[2])
+		job_num = job[0]
+		cmd = "checkjob {0}".format(job_num)
+		output = popen_output(cmd)
+		if 'ERROR' in output:
+			print output
+			return -1
+		nodes = re.search("Allocated Nodes:\n.+", output).group(0).split("\n")[1]
+		print nodes
+def parseNodes(nodes):
+	"""
+		input: nodes in following formats...
+		  seen formats:qnode[4201-4204]*20    # 20 cores used on EACH node in range (inclusive?) 4201-4204 
+				[qhimem0003:24]	      # 24 cores used on qhimem0003
+				qnode[4184]*20        # 20 cores used on 4184
+			("node:#", "node[xxx-xxx,xxx,xxx-xxx]  -- '#' signifies the number of currently USED (unavailable) cores
+		return: # of FREE cores on each node group, (done by getting number of cores being used on EACH node
+	"""
+	
+	return -1
 def popen_output(cmd):
 	p = Popen(cmd, stdout=PIPE,shell=True)
 	return p.communicate()[0]
