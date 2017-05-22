@@ -135,8 +135,9 @@ def checkJobs(job_list):
 			print output
 			return -1
 		task_count = int(re.search("TaskCount: \d{1,}", output).group(0).split()[1]) # don't need this
-		nodes = re.search("Allocated Nodes:\n.+", output).group(0).split("\n")[1]
+		nodes = re.search("Allocated Nodes:\n(.+)", output).group(1)
 		print nodes
+		print len(parseNodes(nodes))
 def parseNodes(nodes):
 	"""
 		input: nodes in following formats...
@@ -148,8 +149,27 @@ def parseNodes(nodes):
 			*** ("node:#", "node[xxx-xxx,xxx,xxx-xxx]  -- '#' signifies the number of currently USED (unavailable) cores
 		return: # of FREE cores on each node group, (done by getting number of cores being used on EACH node
 	"""
-		
-	return -1
+	# format [qnode5056:12][qnode5057:12]
+	if nodes.startswith('[') and nodes.endswith(']'):
+		vals = re.findall("\[([^]]+)\]", nodes)
+		vals = [node.split(':') for node in vals]
+	else: # format 'qnode[4201-4204]*20' or 'qnode[4184,4187-4194,4196-4198,4222-4224]*20'
+		used_nodes, cores = nodes.split('*')
+		name = re.search("(\w+)\[",used_nodes).group(1)
+		node_nums = re.search("\[([^]]+)\]", used_nodes).group(1).split(',')
+		# print name, node_nums, cores
+		vals = [] 
+		for num in node_nums:
+			if '-' in num: # for ranges (e.g. '4187-4195')
+				start, end = num.split('-')
+				for i in range(int(start),int(end)+1):
+					node = name + str(i)
+					vals.append([node,cores])
+			else:
+				node = name + str(num)
+				vals.append([node,cores])
+	# should i make it a dict or nah?
+	return vals	
 def popen_output(cmd):
 	p = Popen(cmd, stdout=PIPE,shell=True)
 	return p.communicate()[0]
