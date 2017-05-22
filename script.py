@@ -8,7 +8,7 @@ def main():
     """
     to run:
     python <scriptname.py> <account name>
-    return:
+    return: formatted sheet of available nodes to account + how many FREE cores are on each one
     """
     if len(sys.argv) != 2: # add 4th argument for year to exempt? (e.g. 2017?)
         print ">> ERROR: Please input valid account number"
@@ -26,9 +26,11 @@ def main():
 	print ">> Getting jobs..." 
 	for res, node_list in reservations.iteritems():
 		curr_jobs = getJobs(res)
-		if curr_jobs:
-			jobs += (curr_jobs)	
-
+		if len(curr_jobs) >= 1:
+			jobs += curr_jobs	
+	if len(jobs) == 0:
+		print ">> No active jobs on account {0}".format(account)
+		return -1
 	print ">> Checking jobs...".format(reservations)	
 	checkJobs(jobs)
     return 0
@@ -106,41 +108,47 @@ def getJobs(reservation):
 	"""
 	cmd = "showq -R {0} -r".format(reservation)
 	showq = popen_output(cmd)
-	if showq is not None:
-		showq = [line.split() for line in showq.split("\n") if line]
-		# output format: ['JOBID', 'S', 'PAR', 'EFFIC', 'XFACTOR', 'Q', 'USERNAME', 'ACCNT', 'MHOST', 'PROCS', 'REMAINING', 'STARTTIME']
-		jobs = [[line[0], line[8], line[9]] for line in showq[2:-3]]
+
+	showq = [line.split() for line in showq.split("\n") if line]
+	# output format: ['JOBID', 'S', 'PAR', 'EFFIC', 'XFACTOR', 'Q', 'USERNAME', 'ACCNT', 'MHOST', 'PROCS', 'REMAINING', 'STARTTIME']
+	jobs = [[line[0], line[8], line[9]] for line in showq[2:-3]]
+	num_jobs = len(jobs)
+	if num_jobs >= 1:
 		print "Jobs running on reservation {0}: {1}".format(reservation, len(jobs))
 		return jobs
 	else:
 		print "No running jobs on reservation '{0}'".format(reservation)
-		return -1
-	return 0	
+		return jobs
 def checkJobs(job_list):
 	"""
 		input: list of currently running jobs for reservation
-		output: ???
+		output: data struct taht has all nodes + the number of FREE CORES on each one
 	"""
+	total_tasks = 0
+	free_nodes = {} # {job:proc capacity}
 	for job in job_list:
-		print '>> Checking job {0}...\n>> starts at {1} - capacity: {2}'.format(job[0], job[1], job[2])
-		job_num = job[0]
+		job_num, node_name, proc_cap = job[0],job[1],int(job[2])
+		print '>> Checking job {0}...\n>> starts at {1} - process capacity: {2}'.format(job_num, node_name, proc_cap)
 		cmd = "checkjob {0}".format(job_num)
 		output = popen_output(cmd)
 		if 'ERROR' in output:
 			print output
 			return -1
+		task_count = int(re.search("TaskCount: \d{1,}", output).group(0).split()[1]) # don't need this
 		nodes = re.search("Allocated Nodes:\n.+", output).group(0).split("\n")[1]
 		print nodes
 def parseNodes(nodes):
 	"""
 		input: nodes in following formats...
-		  seen formats:qnode[4201-4204]*20    # 20 cores used on EACH node in range (inclusive?) 4201-4204 
-				[qhimem0003:24]	      # 24 cores used on qhimem0003
-				qnode[4184]*20        # 20 cores used on 4184
-			("node:#", "node[xxx-xxx,xxx,xxx-xxx]  -- '#' signifies the number of currently USED (unavailable) cores
+		  seen formats:
+			qnode[4201-4204]*20    # 20 cores used on EACH node in range (inclusive?) 4201-4204 
+			[qhimem0003:24]	      # 24 cores used on qhimem0003
+			qnode[4184]*20        # 20 cores used on 4184
+			[qnode5056:12][qnode5057:12]
+			*** ("node:#", "node[xxx-xxx,xxx,xxx-xxx]  -- '#' signifies the number of currently USED (unavailable) cores
 		return: # of FREE cores on each node group, (done by getting number of cores being used on EACH node
 	"""
-	
+		
 	return -1
 def popen_output(cmd):
 	p = Popen(cmd, stdout=PIPE,shell=True)
